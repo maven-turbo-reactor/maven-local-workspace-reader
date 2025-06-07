@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>maven-local-workspace-reader</artifactId>
-    <version>0.6-SNAPSHOT</version>
+    <version>0.6</version>
     <name>maven-local-workspace-reader</name>
     <description>
         Prefer local .jar artifact before checking .m2 or remote repository
