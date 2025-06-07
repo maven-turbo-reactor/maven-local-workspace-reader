@@ -9,6 +9,7 @@ How to use. Add to your `.mvn/extensions.xml`:
 ```xml
 <extensions>
     <extension>
+        <!-- https://github.com/maven-turbo-reactor/maven-local-workspace-reader -->
         <groupId>com.github.seregamorph</groupId>
         <artifactId>maven-local-workspace-reader</artifactId>
         <version>0.4</version>
