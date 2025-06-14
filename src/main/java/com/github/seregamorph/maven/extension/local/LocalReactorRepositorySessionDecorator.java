@@ -1,9 +1,14 @@
 package com.github.seregamorph.maven.extension.local;
 
+import static com.github.seregamorph.maven.extension.local.MavenPropertyUtils.getProperty;
+import static com.github.seregamorph.maven.extension.local.MavenPropertyUtils.isTrue;
+
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import javax.inject.Inject;
 import javax.inject.Named;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.RepositorySessionDecorator;
 import org.eclipse.aether.DefaultRepositorySystemSession;
@@ -25,10 +30,17 @@ public class LocalReactorRepositorySessionDecorator implements RepositorySession
 
     private static final Logger logger = LoggerFactory.getLogger(LocalReactorRepositorySessionDecorator.class);
 
+    private final MavenSession mavenSession;
+
+    @Inject
+    public LocalReactorRepositorySessionDecorator(MavenSession mavenSession) {
+        this.mavenSession = mavenSession;
+    }
+
     @Override
     public RepositorySystemSession decorate(MavenProject project, RepositorySystemSession session) {
-        String useLocalWorkspaceReader = System.getProperty("useLocalWorkspaceReader");
-        if ("true".equals(useLocalWorkspaceReader)) {
+        boolean useLocalWorkspaceReader = isTrue(getProperty(mavenSession, "useLocalWorkspaceReader"));
+        if (useLocalWorkspaceReader) {
             WorkspaceReader originalWorkspaceReader = session.getWorkspaceReader();
             logger.info("Decorating {} with local reactor repository", project);
             DefaultRepositorySystemSession delegate = new DefaultRepositorySystemSession(session);
