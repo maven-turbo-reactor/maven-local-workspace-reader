@@ -1,12 +1,11 @@
 package com.github.seregamorph.maven.extension.local;
 
 import java.util.Objects;
-import org.apache.maven.artifact.Artifact;
 
 /**
  * @author Sergey Chernov
  */
-public final class GroupArtifactId {
+public final class GroupArtifactId implements Comparable<GroupArtifactId> {
 
     private final String groupId;
     private final String artifactId;
@@ -16,8 +15,9 @@ public final class GroupArtifactId {
         this.artifactId = artifactId;
     }
 
-    public static GroupArtifactId of(Artifact artifact) {
-        return new GroupArtifactId(artifact.getGroupId(), artifact.getArtifactId());
+    @Override
+    public int compareTo(GroupArtifactId that) {
+        return toString().compareTo(that.toString());
     }
 
     @Override

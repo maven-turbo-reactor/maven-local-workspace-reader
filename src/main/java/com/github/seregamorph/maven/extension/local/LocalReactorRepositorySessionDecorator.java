@@ -44,7 +44,7 @@ public class LocalReactorRepositorySessionDecorator implements RepositorySession
             WorkspaceReader originalWorkspaceReader = session.getWorkspaceReader();
             logger.info("Decorating {} with local reactor repository", project);
             DefaultRepositorySystemSession delegate = new DefaultRepositorySystemSession(session);
-            Map<GroupArtifactId, MavenProject> modules = ProjectModuleUtils.getProjectModules(project);
+            Map<GroupArtifactId, MavenProject> modules = ProjectModuleUtils.getProjectModules(mavenSession);
             delegate.setWorkspaceReader(new LocalReactorWorkspaceReader(originalWorkspaceReader, modules));
             return delegate;
         } else {
