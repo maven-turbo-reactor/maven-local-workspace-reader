@@ -12,7 +12,7 @@ How to use. Add to your `.mvn/extensions.xml`:
         <!-- https://github.com/maven-turbo-reactor/maven-local-workspace-reader -->
         <groupId>com.github.seregamorph</groupId>
         <artifactId>maven-local-workspace-reader</artifactId>
-        <version>0.6</version>
+        <version>0.7</version>
     </extension>
 </extensions>
 ```
