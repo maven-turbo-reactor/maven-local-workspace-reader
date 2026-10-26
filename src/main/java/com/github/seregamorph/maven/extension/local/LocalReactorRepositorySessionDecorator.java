@@ -20,8 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Instead of default resolving built artifacts in repositories (either local or remote) Maven will first check
- * module target directory.
+ * Instead of default resolving built artifacts in repositories (either local or remote) Maven will first check module
+ * target directory.
  *
  * @author Sergey Chernov
  */
@@ -69,41 +69,58 @@ public class LocalReactorRepositorySessionDecorator implements RepositorySession
 
         @Override
         public File findArtifact(Artifact artifact) {
+            /*@Nullable*/ File defaultArtifact = delegate.findArtifact(artifact);
             GroupArtifactId groupArtifactId = new GroupArtifactId(artifact.getGroupId(), artifact.getArtifactId());
             MavenProject project = modules.get(groupArtifactId);
             if (project != null) {
-                File localFile = findLocalFileCandidate(artifact, project);
-                if (localFile.exists()) {
-                    logger.debug("Found local artifact {} in {}", artifact, project);
-                    return localFile;
-                } else {
-                    logger.warn("Local artifact {} not found in {}, expected at {}, fallback to default resolution",
-                        artifact, project, localFile);
+                if ("pom".equals(artifact.getExtension())) {
+                    return project.getFile();
+                }
+                if ("jar".equals(artifact.getExtension())) {
+                    // Special case when we do not assemble JAR packages, e.g. "mvn compile",
+                    // the defaultArtifact refers to a "module/target/classes" (not JAR).
+                    if (defaultArtifact != null && defaultArtifact.isDirectory()) {
+                        // hint: if defaultArtifact is not null,
+                        // but directory does not exist, isDirectory() is false (hence protecting via hasBeenPackaged)
+                        return defaultArtifact;
+                    }
+
+                    File localFile = findLocalJarFileCandidate(artifact, project);
+                    if (localFile.exists()) {
+                        logger.debug("Found local artifact {} in {}", artifact, project);
+                        return localFile;
+                    } else if (hasBeenPackaged(project)) {
+                        logger.warn("Local artifact {} not found in {}, expected at {}, fallback to default resolution",
+                            artifact, project, localFile);
+                    }
                 }
             }
-            return delegate.findArtifact(artifact);
+            return defaultArtifact;
         }
 
         // never null, but may be non existing
-        private static File findLocalFileCandidate(Artifact artifact, MavenProject project) {
-            if ("pom".equals(artifact.getExtension())) {
-                return project.getFile();
-            } else if ("jar".equals(artifact.getExtension())) {
-                String fileName = project.getBuild().getFinalName();
-                String classifier = artifact.getClassifier();
-                if (classifier != null && !classifier.isEmpty()) {
-                    fileName += "-" + classifier;
-                }
-                fileName += ".jar";
-                return new File(project.getBuild().getDirectory(), fileName);
-            } else {
-                throw new UnsupportedOperationException("Unsupported artifact extension: " + artifact.getExtension());
+        private static File findLocalJarFileCandidate(Artifact artifact, MavenProject project) {
+            String fileName = project.getBuild().getFinalName();
+            String classifier = artifact.getClassifier();
+            if (classifier != null && !classifier.isEmpty()) {
+                fileName += "-" + classifier;
             }
+            fileName += ".jar";
+            return new File(project.getBuild().getDirectory(), fileName);
         }
 
         @Override
         public List<String> findVersions(Artifact artifact) {
             return delegate.findVersions(artifact);
+        }
+
+        /**
+         * Copied from origin org.apache.maven.ReactorReader
+         */
+        private static boolean hasBeenPackaged(MavenProject project) {
+            return project.hasLifecyclePhase("package")
+                || project.hasLifecyclePhase("install")
+                || project.hasLifecyclePhase("deploy");
         }
     }
 }
