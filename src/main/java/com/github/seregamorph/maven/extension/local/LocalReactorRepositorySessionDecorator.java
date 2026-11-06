@@ -6,6 +6,7 @@ import static com.github.seregamorph.maven.extension.local.MavenPropertyUtils.is
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.maven.execution.MavenSession;
@@ -30,6 +31,8 @@ public class LocalReactorRepositorySessionDecorator implements RepositorySession
 
     private static final Logger logger = LoggerFactory.getLogger(LocalReactorRepositorySessionDecorator.class);
 
+    private final AtomicBoolean nullModulesLogged = new AtomicBoolean();
+
     private final MavenSession mavenSession;
 
     @Inject
@@ -41,10 +44,17 @@ public class LocalReactorRepositorySessionDecorator implements RepositorySession
     public RepositorySystemSession decorate(MavenProject project, RepositorySystemSession session) {
         boolean useLocalWorkspaceReader = isTrue(getProperty(mavenSession, "useLocalWorkspaceReader"));
         if (useLocalWorkspaceReader) {
+            Map<GroupArtifactId, MavenProject> modules = ProjectModuleUtils.getProjectModulesOrNull(mavenSession);
+            if (modules == null) {
+                // log once to avoid polluting IDEA logs for multi-module projects
+                if (nullModulesLogged.compareAndSet(false, true)) {
+                    logger.warn("MavenSession.getAllProjects() is not defined, skipping decorating in maven-local-workspace-reader");
+                }
+                return null;
+            }
             WorkspaceReader originalWorkspaceReader = session.getWorkspaceReader();
             logger.info("Decorating {} with local reactor repository", project);
             DefaultRepositorySystemSession delegate = new DefaultRepositorySystemSession(session);
-            Map<GroupArtifactId, MavenProject> modules = ProjectModuleUtils.getProjectModules(mavenSession);
             delegate.setWorkspaceReader(new LocalReactorWorkspaceReader(originalWorkspaceReader, modules));
             return delegate;
         } else {
