@@ -39,6 +39,11 @@
         </license>
     </licenses>
 
+    <properties>
+        <!-- https://maven.apache.org/guides/mini/guide-reproducible-builds.html -->
+        <project.build.outputTimestamp>2026-11-07T13:42:52Z</project.build.outputTimestamp>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
