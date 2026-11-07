@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>maven-local-workspace-reader</artifactId>
-    <version>0.9-SNAPSHOT</version>
+    <version>0.10-SNAPSHOT</version>
     <name>maven-local-workspace-reader</name>
     <description>
         Prefer local .jar artifact before checking .m2 or remote repository
@@ -41,7 +41,7 @@
 
     <properties>
         <!-- https://maven.apache.org/guides/mini/guide-reproducible-builds.html -->
-        <project.build.outputTimestamp>2026-11-07T13:42:52Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2026-11-07T13:46:57Z</project.build.outputTimestamp>
     </properties>
 
     <dependencies>
